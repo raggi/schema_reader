@@ -15,7 +15,12 @@ class MiniSchema
       @columns = {}
       @indexes = {}
     end
-      
+    
+    # rails 2 / sexy migrations
+    def method_missing(name, *args)
+      @columns[args[0]] = [name, args[1]]
+    end
+    
     def column name, type, options = {}
       @columns[name] = [type, options]
     end
@@ -54,12 +59,14 @@ end
 
 module ActiveRecord
   module Schema
+    class <<self
+      attr_accessor :schema
+    end
+    
     def self.define(opts = {}, &blk)
       log "Version: #{opts[:version]}" if opts[:version]
       require 'pp'
       @schema = MiniSchema.new(opts).eval(&blk)
-      require 'raggi/irb/drop'
-      dROP!(binding)
     end
     
     def self.table_to_scaffold_args tablename
