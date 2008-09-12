@@ -1,9 +1,11 @@
-
-def log *args
-  args.each do |msg|
-    puts msg
-  end
-end
+#!/usr/bin/env ruby
+#
+#  schema_reader.rb
+#  schema_reader - a quick and dirty schema stealer for rails 1.2 + (and 2.0)
+#  
+#  Created by James Tucker on 2008-01-09.
+#  Copyright 2008 Mantissa Operations Ltd. All rights reserved.
+# 
 
 class MiniSchema
   class MiniTable
@@ -57,25 +59,19 @@ class MiniSchema
   
 end
 
-module ActiveRecord
-  module Schema
-    class <<self
-      attr_accessor :schema
+module SchemaReader
+  module ActiveRecord
+    module Schema
+      def self.define(opts = {}, &blk)
+        SchemaReader.schema = MiniSchema.new(opts).eval(&blk)
+      end
     end
-    
-    def self.define(opts = {}, &blk)
-      log "Version: #{opts[:version]}" if opts[:version]
-      require 'pp'
-      @schema = MiniSchema.new(opts).eval(&blk)
-    end
-    
-    def self.table_to_scaffold_args tablename
-      @schema.tables[tablename].columns.map{|k, v| k + ':' + v[0].to_s}.join(' ')
-    end
+  end
+  
+  class <<self; attr_accessor :schema; end
 
+  def self.load(file = 'db/schema.rb')
+    Kernel.eval(File.read('db/schema.rb'), Kernel.binding)
+    schema
   end
 end
-
-
-require 'schema.rb'
-

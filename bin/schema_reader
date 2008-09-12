@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+dir = File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+$:.unshift(dir) unless $:.include?(dir)
+
+require 'schema_reader.rb'
+SchemaReader.load
+
+require 'config/environment.rb'
+require 'console_app'
+require 'console_with_helpers'
+require 'irb'
+puts "Schema monkey-scoped into SchemaReader::ActiveRecord::Schema.schema"
+puts "Example: 
+  schema.tables[tablename].columns.map{|k, v| k + ':' + v.first.to_s}.join(' ')
+"
+puts "Quicker access to schema @ SchemaReader.schema"
+IRB.start(__FILE__)
